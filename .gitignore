@@ -1,0 +1,12 @@
+# Ignora output di compilazione
+Debug/
+Release/
+build/
+Bin/
+
+# Ignora file IDE locali
+.settings/
+.mxproject
+*.launch
+*.su
+.DS_Store
