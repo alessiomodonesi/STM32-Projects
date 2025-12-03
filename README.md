@@ -97,8 +97,6 @@ Vogliamo che il Timer conti a 1 MHz (1 tick = 1 µs) e si resetti ogni 1000 tick
     * `ARR = (Frequenza_Contatore / Frequenza_PWM) - 1`
     * `ARR = (1.000.000 / 1.000) - 1` = **999**
 
-#### Codice (main.c)
-
 ```c
 /* 1. Avviare il Timer PWM prima del while(1) */
 /* USER CODE BEGIN 2 */
