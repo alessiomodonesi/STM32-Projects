@@ -125,11 +125,14 @@ HAL_Delay(500); // Pausa
 ```
 
 ### 4. Interrupt Pulsante (EXTI)
-Gestire la pressione del tasto senza bloccare il codice nel loop principale, usando una funzione di callback.
-* **Configurazione:** Pin `PC13` in modalità `GPIO_EXTI13`. Abilitare interrupt `EXTI line[15:10]` nel NVIC.
+Gestire la pressione del tasto in modo asincrono (senza bloccare il loop principale) usando una funzione di *callback*.
+* **Configurazione CubeMX:**
+    * Pin `PC13`: Modalità **GPIO_EXTI13**.
+    * NVIC: Abilitare **EXTI line[15:10] interrupts**.
 
 ```c
-/* Inserire in main.c nella sezione USER CODE BEGIN 4 (fuori dal main) */
+/* ATTENZIONE: Questa funzione va scritta FUORI dal main(),
+   nella sezione USER CODE BEGIN 4 */
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
@@ -139,7 +142,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
         // Inverte lo stato del LED
         HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 
-        // Piccolo ritardo bloccante per Debounce (solo a scopo didattico)
+        // Piccolo ciclo di ritardo per Debounce (solo a scopo didattico per evitare rimbalzi)
         for(int i=0; i<100000; i++);
     }
 }
@@ -202,7 +205,7 @@ In attesa della breadboard, questi esperimenti sfruttano l'hardware già integra
 
 ---
 
-## 🚀 Roadmap
+## 🚀 Prossimi Passaggi (Roadmap)
 
 - [x] Setup Ambiente e Firmware Update
 - [x] Hello World (Blink LED)
