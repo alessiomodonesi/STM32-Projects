@@ -183,7 +183,7 @@ In attesa della breadboard, questi esperimenti sfruttano l'hardware già integra
 
 ---
 
-## 🚀 Roadmap Aggiornata
+## 🚀 Roadmap
 
 - [x] Setup Ambiente e Firmware Update
 - [x] Hello World (Blink LED)
