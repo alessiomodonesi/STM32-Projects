@@ -126,6 +126,27 @@ HAL_Delay(500); // Pausa
 /* USER CODE END 3 */
 ```
 
+### 4. Interrupt Pulsante (EXTI)
+Gestire la pressione del tasto senza bloccare il codice nel loop principale, usando una funzione di callback.
+* **Configurazione:** Pin `PC13` in modalità `GPIO_EXTI13`. Abilitare interrupt `EXTI line[15:10]` nel NVIC.
+
+```c
+/* Inserire in main.c nella sezione USER CODE BEGIN 4 (fuori dal main) */
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    // Verifica che l'interrupt arrivi dal Tasto Blu (B1)
+    if (GPIO_Pin == B1_Pin)
+    {
+        // Inverte lo stato del LED
+        HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+
+        // Piccolo ritardo bloccante per Debounce (solo a scopo didattico)
+        for(int i=0; i<100000; i++);
+    }
+}
+```
+
 ## ⚙️ Gestione Git (.gitignore)
 
 Per evitare di caricare file spazzatura (compilati, debug, impostazioni locali), creare un file chiamato `.gitignore` nella cartella principale (root) e incollarci dentro questo contenuto:
