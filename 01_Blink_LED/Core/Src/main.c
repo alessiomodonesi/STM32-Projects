@@ -101,7 +101,6 @@ int main(void) {
 
 		// HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); // Inverte lo stato del LED
 		// HAL_Delay(500); // Aspetta 500 millisecondi
-
 		// Leggi lo stato del bottone (B1_Pin)
 		// Se leggi RESET (0), significa che il bottone è PREMUTO
 		if (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_RESET) {
