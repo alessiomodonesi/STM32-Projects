@@ -188,7 +188,7 @@ In attesa della breadboard, questi esperimenti sfruttano l'hardware già integra
 - [x] Setup Ambiente e Firmware Update
 - [x] Hello World (Blink LED)
 - [x] **Exp 1: Clock & Frequenze**
-- [ ] **Exp 2: PWM Breathing LED**
+- [x] **Exp 2: PWM Breathing LED**
 - [ ] **Exp 3: Interrupts (EXTI)**
 - [ ] **Exp 4: UART Communication**
 - [ ] **Exp 5: Internal Temp Sensor (ADC)**
