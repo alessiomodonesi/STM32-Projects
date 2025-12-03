@@ -107,13 +107,48 @@ Bin/
 .DS_Store
 ```
 
-## 🚀 Prossimi Passaggi (Roadmap)
+---
+
+## 🧪 Esperimenti "Stand-alone" (Senza Breadboard)
+
+In attesa della breadboard, questi esperimenti sfruttano l'hardware già integrato sulla scheda Nucleo (LED, Button, Debugger, Sensori interni) per esplorare le periferiche avanzate dell'STM32.
+
+### 1. Manipolazione del Clock (RCC)
+* **Obiettivo:** Capire l'albero dei clock.
+* **Attività:** Modificare la frequenza della CPU tramite CubeMX (es. da 180MHz a 16MHz) e osservare visivamente come cambia la velocità di esecuzione (es. la velocità di lampeggio) senza modificare il codice.
+
+### 2. PWM & "Breathing" LED
+* **Obiettivo:** Generazione segnali e Duty Cycle.
+* **Attività:** Configurare il Timer (TIM2 o TIM5) connesso al LED Verde (PA5) in modalità PWM Generation. Variare il *Duty Cycle* nel tempo per creare un effetto "respiro" (fading) invece del lampeggio netto.
+
+### 3. Interrupt Esterni (EXTI)
+* **Obiettivo:** Abbandonare il Polling per un codice reattivo.
+* **Attività:** Configurare il Tasto Blu (PC13) in modalità Interrupt. Gestire l'accensione del LED tramite la funzione di callback `HAL_GPIO_EXTI_Callback`, liberando il loop principale.
+
+### 4. Comunicazione Seriale (UART)
+* **Obiettivo:** Inviare dati al PC.
+* **Attività:** Attivare la USART2 (connessa via USB). Usare `printf` o `HAL_UART_Transmit` per inviare messaggi di debug ("Hello World", stato del bottone) visualizzabili su un terminale (es. CoolTerm, PuTTY, Serial Monitor).
+
+### 5. Sensori Interni (ADC)
+* **Obiettivo:** Leggere segnali analogici senza sensori esterni.
+* **Attività:** Configurare l'ADC per leggere il **Sensore di Temperatura** interno e il canale **VREFINT** (Voltage Reference). Inviare i dati letti via UART per monitorare la temperatura della CPU in tempo reale.
+
+### 6. RTC (Real Time Clock) & Allarme
+* **Obiettivo:** Gestione del tempo reale e Low Power.
+* **Attività:** Configurare l'RTC interno usando l'oscillatore a bassa frequenza (LSI o LSE). Impostare l'orario corrente e configurare un **Allarme** che scatta dopo 10 secondi per attivare un evento (es. accendere il LED), simulando una sveglia.
+
+---
+
+## 🚀 Roadmap Aggiornata
 
 - [x] Setup Ambiente e Firmware Update
 - [x] Hello World (Blink LED)
-- [x] Digital Input (Button Reading)
-- [ ] Lettura Analogica (ADC) con Potenziometro
-- [ ] PWM (Dimming LED)
-- [ ] Comunicazione UART (Stampa su terminale seriale)
+- [ ] **Exp 1: Clock & Frequenze**
+- [ ] **Exp 2: PWM Breathing LED**
+- [ ] **Exp 3: Interrupts (EXTI)**
+- [ ] **Exp 4: UART Communication**
+- [ ] **Exp 5: Internal Temp Sensor (ADC)**
+- [ ] **Exp 6: RTC & Alarm**
+- [ ] Digital Input (Button Reading)
+- [ ] Lettura Analogica Esterna (Potenziometro)
 - [ ] Integrazione Relè e Transistor
-- [ ] Integrazione Display (I2C/SPI)
