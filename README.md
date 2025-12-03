@@ -82,6 +82,50 @@ else
 }
 ```
 
+### 3. PWM Breathing LED (Effetto Respiro)
+Generare un segnale PWM sul pin del LED per variare la luminosità gradualmente.
+* **Pin:** `PA5` (Timer 2, Canale 1)
+* **Clock CPU:** 100 MHz
+
+#### Calcolo Parametri Timer (1 kHz PWM)
+Vogliamo che il Timer conti a 1 MHz (1 tick = 1 µs) e si resetti ogni 1000 tick (1 ms).
+
+1.  **Prescaler (PSC):** Divide il clock della CPU per ottenere la velocità del contatore.
+    * `PSC = (Clock_CPU / Frequenza_Target_Contatore) - 1`
+    * `PSC = (100.000.000 / 1.000.000) - 1` = **99**
+2.  **Period (ARR):** Il numero di tick prima del reset (definisce la frequenza PWM).
+    * `ARR = (Frequenza_Contatore / Frequenza_PWM) - 1`
+    * `ARR = (1.000.000 / 1.000) - 1` = **999**
+
+#### Codice (main.c)
+
+```c
+/* 1. Avviare il Timer PWM prima del while(1) */
+/* USER CODE BEGIN 2 */
+HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+/* USER CODE END 2 */
+
+/* 2. Loop per l'effetto respiro nel while(1) */
+/* USER CODE BEGIN 3 */
+
+// Aumenta luminosità (0 -> 999)
+for(int duty = 0; duty < 1000; duty += 10)
+{
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, duty);
+    HAL_Delay(10);
+}
+
+// Diminuisci luminosità (999 -> 0)
+for(int duty = 1000; duty > 0; duty -= 10)
+{
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, duty);
+    HAL_Delay(10);
+}
+
+HAL_Delay(500); // Pausa
+/* USER CODE END 3 */
+```
+
 ## ⚙️ Gestione Git (.gitignore)
 
 Per evitare di caricare file spazzatura (compilati, debug, impostazioni locali), creare un file chiamato `.gitignore` nella cartella principale (root) e incollarci dentro questo contenuto:
