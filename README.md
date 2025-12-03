@@ -133,6 +133,10 @@ In attesa della breadboard, questi esperimenti sfruttano l'hardware già integra
 * **Obiettivo:** Leggere segnali analogici senza sensori esterni.
 * **Attività:** Configurare l'ADC per leggere il **Sensore di Temperatura** interno e il canale **VREFINT** (Voltage Reference). Inviare i dati letti via UART per monitorare la temperatura della CPU in tempo reale.
 
+### 6. RTC (Real Time Clock) & Allarme
+* **Obiettivo:** Gestione del tempo reale e Low Power.
+* **Attività:** Configurare l'RTC interno usando l'oscillatore a bassa frequenza (LSI o LSE). Impostare l'orario corrente e configurare un **Allarme** che scatta dopo 10 secondi per attivare un evento (es. accendere il LED), simulando una sveglia.
+
 ---
 
 ## 🚀 Roadmap Aggiornata
@@ -144,6 +148,7 @@ In attesa della breadboard, questi esperimenti sfruttano l'hardware già integra
 - [ ] **Exp 3: Interrupts (EXTI)**
 - [ ] **Exp 4: UART Communication**
 - [ ] **Exp 5: Internal Temp Sensor (ADC)**
+- [ ] **Exp 6: RTC & Alarm**
 - [ ] Digital Input (Button Reading)
 - [ ] Lettura Analogica Esterna (Potenziometro)
 - [ ] Integrazione Relè e Transistor
