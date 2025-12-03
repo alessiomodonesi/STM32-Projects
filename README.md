@@ -10,8 +10,8 @@ Contiene il codice sorgente, le configurazioni hardware e le note operative per 
 * **Scheda:** STMicroelectronics NUCLEO-F446RE (MCU: STM32F446RET6, 180MHz, Cortex-M4)
 * **Connessione:** Cavo USB Type-A/C to **Mini-B**
 * **OS:** macOS (Apple Silicon M1/M2/M3)
-* **Pinout Reference:** [Link al Datasheet Ufficiale](https://www.st.com/resource/en/user_manual/dm00105823-stm32-nucleo64-boards-mb1136-stmicroelectronics.pdf) o vedi la serigrafia sulla scheda.
-
+* **Pinout Reference:** [Link al Datasheet Ufficiale](datasheet.pdf) o vedi la serigrafia sulla scheda.
+  
 ### 🚨 Configurazione Iniziale su Mac (Fondamentale)
 Prima di iniziare, è necessario aggiornare il firmware del debugger ST-LINK integrato per garantire la compatibilità con i Mac recenti.
 
