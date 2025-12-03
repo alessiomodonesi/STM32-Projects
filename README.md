@@ -187,12 +187,12 @@ In attesa della breadboard, questi esperimenti sfruttano l'hardware già integra
 
 - [x] Setup Ambiente e Firmware Update
 - [x] Hello World (Blink LED)
-- [x] **Exp 1: Clock & Frequenze**
-- [x] **Exp 2: PWM Breathing LED**
-- [ ] **Exp 3: Interrupts (EXTI)**
-- [ ] **Exp 4: UART Communication**
-- [ ] **Exp 5: Internal Temp Sensor (ADC)**
-- [ ] **Exp 6: RTC & Alarm**
+- [x] Exp 1: Clock & Frequenze
+- [x] Exp 2: PWM Breathing LED
+- [x] Exp 3: Interrupts (EXTI)
+- [ ] Exp 4: UART Communication
+- [ ] Exp 5: Internal Temp Sensor (ADC)
+- [ ] Exp 6: RTC & Alarm
 - [ ] Digital Input (Button Reading)
 - [ ] Lettura Analogica Esterna (Potenziometro)
 - [ ] Integrazione Relè e Transistor
