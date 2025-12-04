@@ -2,13 +2,13 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug Active CMake Target",
-            "type": "cortex-debug",
-            "request": "launch",
-            "servertype": "stutil",
+            "name": "Debug STM32 (Single Project)",
             "cwd": "${workspaceFolder}",
-            "executable": "${command:cmake.launchTargetPath}",
-            "device": "STM32F446RE",
+            "executable": "${workspaceFolder}/build/Debug/01_Blink_LED.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "stutil",
+            "device": "STM32F401RE",
             "interface": "swd",
             "runToEntryPoint": "main",
             "svdFile": "${workspaceFolder}/STM32F401.svd"
