@@ -1,13 +1,37 @@
-# Ignora output di compilazione
+# --- Build Output ---
+build/
+bin/
 Debug/
 Release/
-build/
-Bin/
+*.elf
+*.bin
+*.hex
+*.map
+*.o
+*.obj
+*.a
 
-# Ignora file IDE locali
-.settings/
+# --- CMake ---
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# --- VS Code (Opzionale: scommenta se vuoi ignorare le config utente) ---
+# .vscode/
+.vscode/ipch/
+.vscode/*.log
+# Ignoriamo settings.json se contiene percorsi assoluti del tuo Mac
+.vscode/settings.json
+
+# --- STM32CubeIDE / Eclipse (Non ci servono) ---
+.project
+.cproject
 .mxproject
-*.launch
-*.su
+.settings/
+.classpath
+
+# --- OS Files (Mac/Windows) ---
 .DS_Store
+Thumbs.db
 Icon?
