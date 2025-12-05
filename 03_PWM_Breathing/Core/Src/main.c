@@ -63,9 +63,9 @@ static void MX_TIM2_Init(void);
 /* USER CODE END 0 */
 
 /**
-  * @brief  The application entry point.
-  * @retval int
-  */
+ * @brief  The application entry point.
+ * @retval int
+ */
 int main(void)
 {
 
@@ -94,76 +94,78 @@ int main(void)
   MX_USART2_UART_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-	// Avvia il PWM sul Timer 2, Canale 1
-	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+  // Avvia il PWM sul Timer 2, Canale 1
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	while (1) {
+  while (1)
+  {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		/*
-		 * ================================================================
-		 * CONFIGURAZIONE PWM (Breathing LED)
-		 * ================================================================
-		 * Clock CPU (HCLK)      : 100 MHz (100.000.000 Hz)
-		 * Target Frequenza PWM  : 1 kHz   (1.000 Hz)
-		 *
-		 * 1. CALCOLO PRESCALER (PSC)
-		 * Vogliamo che il Timer conti a una velocità di 1 MHz (1 us per tick).
-		 * Formula: PSC = (Clock_CPU / Clock_Target) - 1
-		 * PSC = (100.000.000 / 1.000.000) - 1 = 99
-		 *
-		 * 2. CALCOLO PERIOD (ARR)
-		 * Vogliamo un ciclo PWM completo ogni 1000 tick (1 kHz).
-		 * Formula: ARR = (Clock_Timer / Freq_PWM) - 1
-		 * ARR = (1.000.000 / 1.000) - 1 = 999
-		 *
-		 * VALORI DA INSERIRE IN CUBEMX:
-		 * -> Prescaler (PSC): 99
-		 * -> Counter Period (ARR): 999
-		 * ================================================================
-		 */
+    /*
+     * ================================================================
+     * CONFIGURAZIONE PWM (Breathing LED)
+     * ================================================================
+     * Clock CPU (HCLK)      : 100 MHz (100.000.000 Hz)
+     * Target Frequenza PWM  : 1 kHz   (1.000 Hz)
+     *
+     * 1. CALCOLO PRESCALER (PSC)
+     * Vogliamo che il Timer conti a una velocità di 1 MHz (1 us per tick).
+     * Formula: PSC = (Clock_CPU / Clock_Target) - 1
+     * PSC = (100.000.000 / 1.000.000) - 1 = 99
+     *
+     * 2. CALCOLO PERIOD (ARR)
+     * Vogliamo un ciclo PWM completo ogni 1000 tick (1 kHz).
+     * Formula: ARR = (Clock_Timer / Freq_PWM) - 1
+     * ARR = (1.000.000 / 1.000) - 1 = 999
+     *
+     * VALORI DA INSERIRE IN CUBEMX:
+     * -> Prescaler (PSC): 99
+     * -> Counter Period (ARR): 999
+     * ================================================================
+     */
 
-		// FASE 1: Aumenta luminosità (0 -> 999)
-		for (int duty = 0; duty < 1000; duty += 10) {
-			// Imposta il valore del registro CCR1
-			__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, duty);
-			HAL_Delay(10); // Aspetta un attimo per rendere l'effetto visibile
-		}
+    // FASE 1: Aumenta luminosità (0 -> 999)
+    for (int duty = 0; duty < 1000; duty += 10)
+    {
+      // Imposta il valore del registro CCR1
+      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, duty);
+      HAL_Delay(10); // Aspetta un attimo per rendere l'effetto visibile
+    }
 
-		// FASE 2: Diminuisci luminosità (999 -> 0)
-		for (int duty = 1000; duty > 0; duty -= 10) {
-			__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, duty);
-			HAL_Delay(10);
-		}
+    // FASE 2: Diminuisci luminosità (999 -> 0)
+    for (int duty = 1000; duty > 0; duty -= 10)
+    {
+      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, duty);
+      HAL_Delay(10);
+    }
 
-		// Pausa a LED spento tra un respiro e l'altro
-		HAL_Delay(500);
-
-	}
+    // Pausa a LED spento tra un respiro e l'altro
+    HAL_Delay(500);
+  }
   /* USER CODE END 3 */
 }
 
 /**
-  * @brief System Clock Configuration
-  * @retval None
-  */
+ * @brief System Clock Configuration
+ * @retval None
+ */
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
   /** Configure the main internal regulator output voltage
-  */
+   */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
 
   /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
+   * in the RCC_OscInitTypeDef structure.
+   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
@@ -180,9 +182,8 @@ void SystemClock_Config(void)
   }
 
   /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+   */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
@@ -195,10 +196,10 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief TIM2 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief TIM2 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_TIM2_Init(void)
 {
 
@@ -240,14 +241,13 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 2 */
   HAL_TIM_MspPostInit(&htim2);
-
 }
 
 /**
-  * @brief USART2 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief USART2 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_USART2_UART_Init(void)
 {
 
@@ -273,14 +273,13 @@ static void MX_USART2_UART_Init(void)
   /* USER CODE BEGIN USART2_Init 2 */
 
   /* USER CODE END USART2_Init 2 */
-
 }
 
 /**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief GPIO Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -310,26 +309,27 @@ static void MX_GPIO_Init(void)
 /* USER CODE END 4 */
 
 /**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-	/* User can add his own implementation to report the HAL error return state */
-	__disable_irq();
-	while (1) {
-	}
+  /* User can add his own implementation to report the HAL error return state */
+  __disable_irq();
+  while (1)
+  {
+  }
   /* USER CODE END Error_Handler_Debug */
 }
 #ifdef USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
