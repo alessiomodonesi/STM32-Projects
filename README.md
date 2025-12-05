@@ -62,6 +62,7 @@ Far lampeggiare il LED Verde (LD2) integrato sulla scheda.
 HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); // Inverte stato (ON/OFF)
 HAL_Delay(500);                             // Attende 500ms
 ```
+
 ### 2. Lettura Pulsante (Digital Input)
 Accendere il LED solo quando si preme il Tasto Blu (B1).
 * **Pin:** `PC13` (Definito come `B1_Pin`)
@@ -148,6 +149,65 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 }
 ```
 
+### 5. Comunicazione Seriale (UART)
+Inviare messaggi di testo al PC tramite la porta USB virtuale (Virtual COM Port) integrata nell'ST-LINK.
+* **Periferica:** USART2
+* **Pin:** `PA2` (TX) e `PA3` (RX)
+* **Configurazione:** 115200 bps, 8 Bits, No Parity, 1 Stop Bit.
+
+```c
+/* 1. Aggiungere gli include necessari (USER CODE BEGIN Includes) */
+#include <string.h>
+#include <stdio.h>
+
+/* 2. Inserire nel ciclo while(1) */
+char msg[] = "Hello from STM32!\r\n"; // \r\n per andare a capo
+
+// Invia la stringa via UART
+// &huart2      -> Handle della periferica
+// (uint8_t*)msg -> Casting del messaggio a array di byte
+// strlen(msg)  -> Calcola lunghezza stringa (richiede <string.h>)
+// 100          -> Timeout in ms
+HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 100);
+
+HAL_Delay(1000); // Invia ogni secondo
+```
+
+### 6. Internal Temp Sensor (ADC)
+Utilizzo del convertitore Analogico-Digitale (ADC) per leggere il sensore di temperatura integrato nel die del microcontrollore.
+
+* **Periferica:** ADC1 (Canale Temperature Sensor)
+* **Sampling Time:** 480 Cycles (Necessario per segnali interni stabili)
+* **Output:** UART2 (Serial Monitor)
+
+La temperatura è calcolata usando i valori di calibrazione di fabbrica salvati nella memoria di sistema:
+* **Formula:** Interpolazione lineare tra i punti di calibrazione a 30°C e 110°C.
+
+```c
+/* Definizione indirizzi Calibrazione (Specifici per STM32F446) */
+#define TS_CAL1_ADDR ((uint16_t*)((uint32_t)0x1FFF7A2C))
+#define TS_CAL2_ADDR ((uint16_t*)((uint32_t)0x1FFF7A2E))
+
+/* Nel ciclo while(1) */
+HAL_ADC_Start(&hadc1);
+if (HAL_ADC_PollForConversion(&hadc1, 100) == HAL_OK)
+{
+    uint16_t rawValue = HAL_ADC_GetValue(&hadc1);
+
+    // Lettura valori di fabbrica
+    int32_t cal1 = *TS_CAL1_ADDR;
+    int32_t cal2 = *TS_CAL2_ADDR;
+
+    // Calcolo Temperatura
+    float temp = ((float)(rawValue - cal1) / (float)(cal2 - cal1)) * 80.0f + 30.0f;
+
+    // Invio via UART
+    char msg[50];
+    sprintf(msg, "Temp: %.2f C\r\n", temp);
+    HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 100);
+}
+```
+
 ## ⚙️ Gestione Git (.gitignore)
 
 Per evitare di caricare file spazzatura (compilati, debug, impostazioni locali), creare un file chiamato `.gitignore` nella cartella principale (root) e incollarci dentro questo contenuto:
@@ -213,7 +273,7 @@ In attesa della breadboard, questi esperimenti sfruttano l'hardware già integra
 - [x] PWM Breathing LED
 - [x] Interrupts (EXTI)
 - [x] UART Communication
-- [ ] Internal Temp Sensor (ADC)
+- [x] Internal Temp Sensor (ADC)
 - [ ] RTC & Alarm
 - [ ] Digital Input (Button Reading)
 - [ ] Lettura Analogica Esterna (Potenziometro)
