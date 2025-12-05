@@ -48,7 +48,9 @@ ADC_HandleTypeDef hadc1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+// Variabile di stato: 1 = Invia dati, 0 = Pausa (Silenzio)
+uint8_t system_active = 1;
+uint32_t last_time_sent = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -105,36 +107,52 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-    // 1. Avvia la conversione ADC
-    HAL_ADC_Start(&hadc1);
-
-    // 2. Attendi la fine della conversione
-    if (HAL_ADC_PollForConversion(&hadc1, 100) == HAL_OK)
+    // --- 1. CONTROLLO TASTO (Sempre attivo, velocissimo) ---
+    // Controlliamo ad ogni giro, senza pause lunghe
+    if (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_RESET)
     {
-      // 3. Leggi il valore grezzo (0-4095)
-      uint16_t rawValue = HAL_ADC_GetValue(&hadc1);
-
-      // 4. Leggi i valori di calibrazione dalla memoria
-      int32_t cal1 = *TS_CAL1_ADDR; // Valore a 30°C
-      int32_t cal2 = *TS_CAL2_ADDR; // Valore a 110°C
-
-      // 5. Calcola la temperatura (Formula interpolazione)
-      // Usiamo i float per precisione, ma si può fare anche con interi scalati
-      float temperature = ((float)(rawValue - cal1) / (float)(cal2 - cal1)) * (110.0f - 30.0f) + 30.0f;
-
-      // 6. Prepara il messaggio per la UART
-      char msg[50];
-      // Stampiamo parte intera e decimale (es. "CPU Temp: 35.4 C")
-      sprintf(msg, "CPU Temp: %.2f C\r\n", temperature);
-
-      // 7. Invia
-      HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), 100);
+      system_active = !system_active; // Inverte stato
+      HAL_Delay(300);                 // Piccolo ritardo solo per il rimbalzo del tasto (Debounce)
     }
 
-    // Ferma l'ADC per risparmiare energia (opzionale se campioni continuo)
-    HAL_ADC_Stop(&hadc1);
+    // --- 2. LOGICA DI INVIO (Non-Blocking) ---
+    // Invece di dormire, chiediamo: "È passato 1 secondo dall'ultima volta?"
+    if (system_active == 1)
+    {
+      // HAL_GetTick() restituisce i millisecondi passati dall'accensione
+      if ((HAL_GetTick() - last_time_sent) > 1000)
+      {
+        // Aggiorniamo il tempo
+        last_time_sent = HAL_GetTick();
 
-    HAL_Delay(1000); // Aggiorna ogni secondo
+        // --- Fai tutto il lavoro qui ---
+        HAL_ADC_Start(&hadc1);
+        if (HAL_ADC_PollForConversion(&hadc1, 100) == HAL_OK)
+        {
+          uint16_t rawValue = HAL_ADC_GetValue(&hadc1);
+
+          int32_t cal1 = *TS_CAL1_ADDR;
+          int32_t cal2 = *TS_CAL2_ADDR;
+          float temperature = ((float)(rawValue - cal1) / (float)(cal2 - cal1)) * 80.0f + 30.0f;
+
+          int p_int = (int)temperature;
+          int p_dec = (int)((temperature - p_int) * 100);
+
+          char msg[60];
+          sprintf(msg, "Stato: ON | Temp: %d.%02d C\r\n", p_int, p_dec);
+          HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), 100);
+
+          // Blink rapido
+          HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+        }
+        HAL_ADC_Stop(&hadc1);
+      }
+    }
+    else
+    {
+      // Se siamo in pausa, spegni il LED
+      HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+    }
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
