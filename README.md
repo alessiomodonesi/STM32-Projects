@@ -212,7 +212,7 @@ In attesa della breadboard, questi esperimenti sfruttano l'hardware già integra
 - [x] Clock & Frequenze
 - [x] PWM Breathing LED
 - [x] Interrupts (EXTI)
-- [ ] UART Communication
+- [x] UART Communication
 - [ ] Internal Temp Sensor (ADC)
 - [ ] RTC & Alarm
 - [ ] Digital Input (Button Reading)
