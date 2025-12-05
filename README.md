@@ -173,38 +173,64 @@ HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 100);
 HAL_Delay(1000); // Invia ogni secondo
 ```
 
-### 6. Internal Temp Sensor (ADC)
-Utilizzo del convertitore Analogico-Digitale (ADC) per leggere il sensore di temperatura integrato nel die del microcontrollore.
+### 6. Internal Temp Sensor (ADC) & Non-Blocking I/O
+* **Obiettivo:** Leggere la temperatura della CPU e inviarla via UART, gestendo il flusso con il Tasto Blu in modo reattivo (senza `HAL_Delay` bloccanti).
+* **Periferica:** ADC1 (Channel: Temperature Sensor).
+* **Configurazione:** Sampling Time **480 Cycles** (necessario per stabilità).
+* **Logica Avanzata:** Utilizzo di `HAL_GetTick()` per gestire le tempistiche. Questo permette al processore di controllare il bottone migliaia di volte al secondo anche mentre aspetta di inviare i dati.
 
-* **Periferica:** ADC1 (Canale Temperature Sensor)
-* **Sampling Time:** 480 Cycles (Necessario per segnali interni stabili)
-* **Output:** UART2 (Serial Monitor)
-
-La temperatura è calcolata usando i valori di calibrazione di fabbrica salvati nella memoria di sistema:
-* **Formula:** Interpolazione lineare tra i punti di calibrazione a 30°C e 110°C.
+**Codice Sorgente (`main.c`):**
 
 ```c
-/* Definizione indirizzi Calibrazione (Specifici per STM32F446) */
-#define TS_CAL1_ADDR ((uint16_t*)((uint32_t)0x1FFF7A2C))
-#define TS_CAL2_ADDR ((uint16_t*)((uint32_t)0x1FFF7A2E))
+/* 1. Definizioni Indirizzi Calibrazione (Specifici per STM32F446) */
+#define TS_CAL1_ADDR ((uint16_t*)((uint32_t)0x1FFF7A2C)) // Calibrazione a 30°C
+#define TS_CAL2_ADDR ((uint16_t*)((uint32_t)0x1FFF7A2E)) // Calibrazione a 110°C
 
-/* Nel ciclo while(1) */
-HAL_ADC_Start(&hadc1);
-if (HAL_ADC_PollForConversion(&hadc1, 100) == HAL_OK)
+/* 2. Variabili Globali (USER CODE BEGIN PV) */
+uint8_t system_active = 1;    // Flag stato: 1=ON, 0=PAUSA
+uint32_t last_time_sent = 0;  // Timer software
+
+/* 3. Loop Principale (Non-Blocking) */
+while (1)
 {
-    uint16_t rawValue = HAL_ADC_GetValue(&hadc1);
+    // A. Controllo Tasto Reattivo (Polling continuo)
+    if (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_RESET)
+    {
+        system_active = !system_active; // Toggle ON/OFF
+        HAL_Delay(300); // Debounce
+    }
 
-    // Lettura valori di fabbrica
-    int32_t cal1 = *TS_CAL1_ADDR;
-    int32_t cal2 = *TS_CAL2_ADDR;
+    // B. Logica a tempo (Esegue ogni 1000ms senza bloccare il tasto)
+    if (system_active && (HAL_GetTick() - last_time_sent > 1000))
+    {
+        last_time_sent = HAL_GetTick(); // Reset timer
 
-    // Calcolo Temperatura
-    float temp = ((float)(rawValue - cal1) / (float)(cal2 - cal1)) * 80.0f + 30.0f;
+        // Avvio ADC e Lettura
+        HAL_ADC_Start(&hadc1);
+        if (HAL_ADC_PollForConversion(&hadc1, 100) == HAL_OK)
+        {
+            uint16_t rawValue = HAL_ADC_GetValue(&hadc1);
 
-    // Invio via UART
-    char msg[50];
-    sprintf(msg, "Temp: %.2f C\r\n", temp);
-    HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 100);
+            // Calcolo Temperatura (Interpolazione Lineare)
+            int32_t cal1 = *TS_CAL1_ADDR;
+            int32_t cal2 = *TS_CAL2_ADDR;
+            float temp = ((float)(rawValue - cal1) / (float)(cal2 - cal1)) * 80.0f + 30.0f;
+
+            // Stampa "Float" usando interi (Workaround per sprintf nano-lib)
+            int p_int = (int)temp;
+            int p_dec = (int)((temp - p_int) * 100);
+
+            char msg[50];
+            sprintf(msg, "Stato: ON | Temp CPU: %d.%02d C\r\n", p_int, p_dec);
+            HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 100);
+            
+            HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); // Blink Feedback
+        }
+        HAL_ADC_Stop(&hadc1);
+    }
+    
+    // Feedback visivo in pausa
+    if (!system_active) HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
 }
 ```
 
