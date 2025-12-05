@@ -62,6 +62,7 @@ Far lampeggiare il LED Verde (LD2) integrato sulla scheda.
 HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); // Inverte stato (ON/OFF)
 HAL_Delay(500);                             // Attende 500ms
 ```
+
 ### 2. Lettura Pulsante (Digital Input)
 Accendere il LED solo quando si preme il Tasto Blu (B1).
 * **Pin:** `PC13` (Definito come `B1_Pin`)
@@ -146,6 +147,30 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
         for(int i=0; i<100000; i++);
     }
 }
+```
+
+### 5. Comunicazione Seriale (UART)
+Inviare messaggi di testo al PC tramite la porta USB virtuale (Virtual COM Port) integrata nell'ST-LINK.
+* **Periferica:** USART2
+* **Pin:** `PA2` (TX) e `PA3` (RX)
+* **Configurazione:** 115200 bps, 8 Bits, No Parity, 1 Stop Bit.
+
+```c
+/* 1. Aggiungere gli include necessari (USER CODE BEGIN Includes) */
+#include <string.h>
+#include <stdio.h>
+
+/* 2. Inserire nel ciclo while(1) */
+char msg[] = "Hello from STM32!\r\n"; // \r\n per andare a capo
+
+// Invia la stringa via UART
+// &huart2      -> Handle della periferica
+// (uint8_t*)msg -> Casting del messaggio a array di byte
+// strlen(msg)  -> Calcola lunghezza stringa (richiede <string.h>)
+// 100          -> Timeout in ms
+HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 100);
+
+HAL_Delay(1000); // Invia ogni secondo
 ```
 
 ## ⚙️ Gestione Git (.gitignore)
