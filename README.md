@@ -173,6 +173,41 @@ HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 100);
 HAL_Delay(1000); // Invia ogni secondo
 ```
 
+### 6. Internal Temp Sensor (ADC)
+Utilizzo del convertitore Analogico-Digitale (ADC) per leggere il sensore di temperatura integrato nel die del microcontrollore.
+
+* **Periferica:** ADC1 (Canale Temperature Sensor)
+* **Sampling Time:** 480 Cycles (Necessario per segnali interni stabili)
+* **Output:** UART2 (Serial Monitor)
+
+La temperatura è calcolata usando i valori di calibrazione di fabbrica salvati nella memoria di sistema:
+* **Formula:** Interpolazione lineare tra i punti di calibrazione a 30°C e 110°C.
+
+```c
+/* Definizione indirizzi Calibrazione (Specifici per STM32F446) */
+#define TS_CAL1_ADDR ((uint16_t*)((uint32_t)0x1FFF7A2C))
+#define TS_CAL2_ADDR ((uint16_t*)((uint32_t)0x1FFF7A2E))
+
+/* Nel ciclo while(1) */
+HAL_ADC_Start(&hadc1);
+if (HAL_ADC_PollForConversion(&hadc1, 100) == HAL_OK)
+{
+    uint16_t rawValue = HAL_ADC_GetValue(&hadc1);
+
+    // Lettura valori di fabbrica
+    int32_t cal1 = *TS_CAL1_ADDR;
+    int32_t cal2 = *TS_CAL2_ADDR;
+
+    // Calcolo Temperatura
+    float temp = ((float)(rawValue - cal1) / (float)(cal2 - cal1)) * 80.0f + 30.0f;
+
+    // Invio via UART
+    char msg[50];
+    sprintf(msg, "Temp: %.2f C\r\n", temp);
+    HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 100);
+}
+```
+
 ## ⚙️ Gestione Git (.gitignore)
 
 Per evitare di caricare file spazzatura (compilati, debug, impostazioni locali), creare un file chiamato `.gitignore` nella cartella principale (root) e incollarci dentro questo contenuto:
@@ -238,7 +273,7 @@ In attesa della breadboard, questi esperimenti sfruttano l'hardware già integra
 - [x] PWM Breathing LED
 - [x] Interrupts (EXTI)
 - [x] UART Communication
-- [ ] Internal Temp Sensor (ADC)
+- [x] Internal Temp Sensor (ADC)
 - [ ] RTC & Alarm
 - [ ] Digital Input (Button Reading)
 - [ ] Lettura Analogica Esterna (Potenziometro)
