@@ -139,7 +139,7 @@ int main(void)
           int p_dec = (int)((temperature - p_int) * 100);
 
           char msg[60];
-          sprintf(msg, "Stato: ON | Temp: %d.%02d C\r\n", p_int, p_dec);
+          sprintf(msg, "Temp: %d.%02d C\r\n", p_int, p_dec);
           HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), 100);
 
           // Blink rapido
