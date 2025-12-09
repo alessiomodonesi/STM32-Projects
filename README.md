@@ -306,6 +306,22 @@ HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 100);
 HAL_Delay(1000);
 ```
 
+### 8. External Blink (GPIO Output)
+* **Obiettivo:** Pilotare un carico esterno (LED) su breadboard.
+* **Hardware:** LED, Resistenza 220Ω, Breadboard.
+* **Pin:** `PA0` (Configurato come GPIO_Output).
+* **Teoria:** La resistenza è necessaria per limitare la corrente e proteggere il pin (Legge di Ohm: $I = V/R$).
+
+**Collegamento:**
+* **Anodo LED (+):** Collegato al Pin `PA0`.
+* **Catodo LED (-):** Collegato alla Resistenza -> GND.
+
+```c
+/* Nel while(1) */
+HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0); // Toggle Pin PA0
+HAL_Delay(500);
+```
+
 ## ⚙️ Gestione Git (.gitignore)
 
 Per evitare di caricare file spazzatura (compilati, debug, impostazioni locali), creare un file chiamato `.gitignore` nella cartella principale (root) e incollarci dentro questo contenuto:
@@ -377,7 +393,7 @@ In attesa della breadboard, questi esperimenti sfruttano l'hardware già integra
 
 ### 🟢 Fase 1: Breadboard Fundamentals
 Questi esperimenti servono a prendere confidenza con i collegamenti fisici, la breadboard e l'uso del Multimetro.
-- [ ] **08. External Blink** (GPIO Output & Legge di Ohm)
+- [x] **08. External Blink** (GPIO Output & Legge di Ohm)
 - [ ] **09. Il Potenziometro** (ADC Input & Partitore di Tensione)
 - [ ] **10. Pulsante Esterno** (Input & Hardware Debounce con filtro RC)
 
