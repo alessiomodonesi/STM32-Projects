@@ -475,6 +475,37 @@ HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
 HAL_Delay(1000);
 ```
 
+#### Relè con Toggle e Feedback Esterno
+* **Obiettivo:** Sistema di automazione completo su breadboard. Un pulsante attiva/disattiva un Relè e un LED di segnalazione esterno.
+* **Hardware:**
+    * **Output Potenza:** Relè 5V pilotato da Transistor S8050 su Pin `PA0`.
+    * **Output Segnalazione:** LED Esterno su Pin `PA1`.
+    * **Input:** Pulsante (con filtro RC) su Pin `PA10`.
+* **Configurazione:**
+    * `PA0` -> GPIO_Output (Relè).
+    * `PA1` -> GPIO_Output (LED Esterno).
+    * `PA10` -> GPIO_Input (Pulsante).
+
+**Logica di Controllo:**
+Pressione Tasto -> Inversione Stato -> Attivazione simultanea di Relè (Click) e LED (Luce).
+
+```c
+/* Logica nel while(1) */
+if (stato_pulsante_att == GPIO_PIN_SET && stato_pulsante_prec == GPIO_PIN_RESET)
+{
+    stato_sistema = !stato_sistema; // Toggle
+    
+    if(stato_sistema) {
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET); // Relè ON
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET); // Ext LED ON
+    } else {
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET); // Relè OFF
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET); // Ext LED OFF
+    }
+    HAL_Delay(50);
+}
+```
+
 ## ⚙️ Gestione Git (.gitignore)
 
 Per evitare di caricare file spazzatura (compilati, debug, impostazioni locali), creare un file chiamato `.gitignore` nella cartella principale (root) e incollarci dentro questo contenuto:
