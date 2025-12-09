@@ -21,7 +21,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -43,7 +44,8 @@
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+uint8_t stato_prec = 0;
+uint8_t sistema_attivo = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -90,7 +92,8 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  // Accendi PA1 (LED Esterno) per vedere se il pin risponde
+  // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -98,8 +101,31 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
-    HAL_Delay(1000); // 1 Secondo di pausa
+    // Leggi il pulsante su PA10 (D2)
+    // Se non hai definito MY_BTN, usa: HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10)
+    uint8_t stato_att = HAL_GPIO_ReadPin(MY_BTN_GPIO_Port, MY_BTN_Pin);
+
+    // Se premi il tasto (Fronte di salita)
+    if (stato_att == GPIO_PIN_SET && stato_prec == GPIO_PIN_RESET)
+    {
+      sistema_attivo = !sistema_attivo; // Inverti stato (ON <-> OFF)
+
+      if (sistema_attivo)
+      {
+        // ACCENDI RELÈ (PA0) e LED (PA1)
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);
+      }
+      else
+      {
+        // SPEGNI TUTTO
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
+      }
+      HAL_Delay(50); // Piccolo ritardo anti-rimbalzo
+    }
+    stato_prec = stato_att;
+    HAL_Delay(10);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -202,7 +228,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, EXT_LED_Pin | LD2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, EXT_RELAY_Pin | EXT_LED_Pin | LD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -210,12 +236,18 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : EXT_LED_Pin LD2_Pin */
-  GPIO_InitStruct.Pin = EXT_LED_Pin | LD2_Pin;
+  /*Configure GPIO pins : EXT_RELAY_Pin EXT_LED_Pin LD2_Pin */
+  GPIO_InitStruct.Pin = EXT_RELAY_Pin | EXT_LED_Pin | LD2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : MY_BTN_Pin */
+  GPIO_InitStruct.Pin = MY_BTN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(MY_BTN_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
