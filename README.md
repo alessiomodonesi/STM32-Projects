@@ -322,6 +322,41 @@ HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0); // Toggle Pin PA0
 HAL_Delay(500);
 ```
 
+### 9. Il Potenziometro (ADC Input)
+* **Obiettivo:** Leggere una tensione analogica variabile (da 0V a 3.3V) tramite un trimmer/potenziometro e visualizzare il voltaggio sul PC.
+* **Hardware:** Trimmer 10kΩ, Breadboard.
+* **Pin:** `PA0` (Configurato come **ADC1_IN0**).
+* **Teoria:** Il potenziometro agisce come un partitore di tensione variabile. L'ADC a 12-bit converte la tensione in un numero intero da 0 a 4095.
+
+**Collegamento:**
+* **Pin 1 Trimmer:** 3.3V (Linea Rossa)
+* **Pin 2 Trimmer (Centrale/Wiper):** Pin `PA0` (Segnale)
+* **Pin 3 Trimmer:** GND (Linea Blu)
+
+```c
+/* Nel while(1) */
+HAL_ADC_Start(&hadc1);
+if (HAL_ADC_PollForConversion(&hadc1, 100) == HAL_OK)
+{
+    // 1. Lettura valore grezzo (0 - 4095)
+    uint32_t rawValue = HAL_ADC_GetValue(&hadc1);
+
+    // 2. Conversione in Volt (Vref = 3.3V)
+    float voltage = (float)rawValue / 4095.0f * 3.3f;
+
+    // 3. Stampa (Trucco per %f con nano-lib)
+    int v_int = (int)voltage;
+    int v_dec = (int)((voltage - v_int) * 100);
+
+    char msg[50];
+    // \r finale permette di sovrascrivere la riga nel terminale
+    sprintf(msg, "Raw: %4lu | Volt: %d.%02d V\r", rawValue, v_int, v_dec);
+    HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 100);
+}
+HAL_ADC_Stop(&hadc1);
+HAL_Delay(100);
+```
+
 ## ⚙️ Gestione Git (.gitignore)
 
 Per evitare di caricare file spazzatura (compilati, debug, impostazioni locali), creare un file chiamato `.gitignore` nella cartella principale (root) e incollarci dentro questo contenuto:
@@ -394,7 +429,7 @@ In attesa della breadboard, questi esperimenti sfruttano l'hardware già integra
 ### 🟢 Fase 1: Breadboard Fundamentals
 Questi esperimenti servono a prendere confidenza con i collegamenti fisici, la breadboard e l'uso del Multimetro.
 - [x] **08. External Blink** (GPIO Output & Legge di Ohm)
-- [ ] **09. Il Potenziometro** (ADC Input & Partitore di Tensione)
+- [x] **09. Il Potenziometro** (ADC Input & Partitore di Tensione)
 - [ ] **10. Pulsante Esterno** (Input & Hardware Debounce con filtro RC)
 
 ### 🟡 Fase 2: Potenza & Switching
