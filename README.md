@@ -365,6 +365,7 @@ In attesa della breadboard, questi esperimenti sfruttano l'hardware già integra
 
 ## 🚀 Prossimi Passaggi (Roadmap)
 
+### ✅ Fase 0: On-Board (Completed)
 - [x] Setup Ambiente e Firmware Update
 - [x] Hello World (Blink LED)
 - [x] Clock & Frequenze
@@ -373,6 +374,21 @@ In attesa della breadboard, questi esperimenti sfruttano l'hardware già integra
 - [x] UART Communication
 - [x] Internal Temp Sensor (ADC)
 - [x] RTC & Alarm
-- [ ] Digital Input (Button Reading)
-- [ ] Lettura Analogica Esterna (Potenziometro)
-- [ ] Integrazione Relè e Transistor
+
+### 🟢 Fase 1: Breadboard Fundamentals
+Questi esperimenti servono a prendere confidenza con i collegamenti fisici, la breadboard e l'uso del Multimetro.
+- [ ] **08. External Blink** (GPIO Output & Legge di Ohm)
+- [ ] **09. Il Potenziometro** (ADC Input & Partitore di Tensione)
+- [ ] **10. Pulsante Esterno** (Input & Hardware Debounce con filtro RC)
+
+### 🟡 Fase 2: Potenza & Switching
+Gestione di carichi che richiedono più corrente di quella che il microcontrollore può erogare.
+- [ ] **11. Transistor come Interruttore** (BJT NPN per pilotare carichi)
+- [ ] **12. Relè & Diodo di Ricircolo** (Isolamento galvanico e protezione da sovratensioni)
+
+### 🟠 Fase 3: Logica Digitale
+- [ ] **13. Shift Register** (74HC595 - Espansione uscite / Effetto Supercar)
+
+### 🔴 Fase 4: Analogica Avanzata
+- [ ] **14. Microfono & Op-Amp** (Amplificazione operazionale di segnali deboli)
+- [ ] **15. Costante di Tempo RC** (Misura della capacità di un condensatore usando la fisica)
