@@ -450,6 +450,31 @@ HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
 HAL_Delay(500);
 ```
 
+### 12. Controllo Relè & Diodo di Ricircolo
+* **Obiettivo:** Pilotare un carico induttivo meccanico (Relè) isolando il microcontrollore dal circuito di potenza.
+* **Hardware:** Relè 5V (Omron G5V-1), Transistor NPN (S8050), Diodo (1N4007), Resistenza 1kΩ.
+* **Pin:** `PA0` (Segnale).
+* **Teoria:**
+    * **Inductive Kickback:** Quando la bobina del relè viene spenta, genera un picco di tensione inversa (centinaia di Volt) che distruggerebbe il transistor.
+    * **Flyback Diode:** Il diodo 1N4007, messo in antiparallelo alla bobina, "mangia" questa scarica proteggendo il circuito.
+
+**Collegamento (Circuito di Pilotaggio):**
+* **Transistor Emettitore:** Diretto a GND.
+* **Transistor Base:** Resistenza 1kΩ -> Pin `PA0`.
+* **Transistor Collettore:** Collegato al **Pin 1** della Bobina del Relè + **Anodo** (lato nero) del Diodo.
+
+**Collegamento (Circuito di Potenza/Bobina):**
+* **Pin 6 Bobina Relè:** Collegato ai **5V**.
+* **Catodo Diodo (Striscia Grigia):** Collegato anch'esso ai **5V** (In parallelo alla bobina).
+
+⚠️ **ATTENZIONE:** Il diodo va montato con la striscia verso il positivo (5V). Se montato al contrario, crea un cortocircuito.
+
+```c
+/* Nel while(1) - Si sente il CLICK-CLACK */
+HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
+HAL_Delay(1000);
+```
+
 ## ⚙️ Gestione Git (.gitignore)
 
 Per evitare di caricare file spazzatura (compilati, debug, impostazioni locali), creare un file chiamato `.gitignore` nella cartella principale (root) e incollarci dentro questo contenuto:
