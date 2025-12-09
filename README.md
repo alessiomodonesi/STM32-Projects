@@ -433,6 +433,23 @@ while (1)
 }
 ```
 
+### 11. Transistor come Interruttore (BJT NPN)
+* **Obiettivo:** Pilotare un carico ad alta corrente (3 LED in parallelo alimentati a 5V) usando un pin dell'STM32 (3.3V) tramite un transistor.
+* **Hardware:** Transistor NPN (S8050), 3x LED, Resistenze (220Ω per LED, 1kΩ per Base).
+* **Pin:** `PA0` (Segnale di controllo).
+* **Teoria:** Il transistor agisce come un interruttore controllato in corrente (Low-Side Switch). Una piccola corrente alla Base (dal microcontrollore) permette il passaggio di una grande corrente dal Collettore all'Emettitore.
+
+**Collegamento (S8050 E-B-C):**
+* **Emettitore (Sinistra):** Diretto a GND.
+* **Base (Centro):** Resistenza 1kΩ -> Pin `PA0`.
+* **Collettore (Destra):** Collegato ai Catodi (-) dei LED. Gli Anodi (+) dei LED vanno a 5V.
+
+```c
+/* Nel while(1) - Codice Blink standard */
+HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
+HAL_Delay(500);
+```
+
 ## ⚙️ Gestione Git (.gitignore)
 
 Per evitare di caricare file spazzatura (compilati, debug, impostazioni locali), creare un file chiamato `.gitignore` nella cartella principale (root) e incollarci dentro questo contenuto:
@@ -510,8 +527,8 @@ Questi esperimenti servono a prendere confidenza con i collegamenti fisici, la b
 
 ### 🟡 Fase 2: Potenza & Switching
 Gestione di carichi che richiedono più corrente di quella che il microcontrollore può erogare.
-- [ ] **11. Transistor come Interruttore** (BJT NPN per pilotare carichi)
-- [ ] **12. Relè & Diodo di Ricircolo** (Isolamento galvanico e protezione da sovratensioni)
+- [x] **11. Transistor come Interruttore** (BJT NPN per pilotare carichi)
+- [x] **12. Relè & Diodo di Ricircolo** (Isolamento galvanico e protezione da sovratensioni)
 
 ### 🟠 Fase 3: Logica Digitale
 - [ ] **13. Shift Register** (74HC595 - Espansione uscite / Effetto Supercar)
