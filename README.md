@@ -366,14 +366,14 @@ In attesa della breadboard, questi esperimenti sfruttano l'hardware già integra
 ## 🚀 Prossimi Passaggi (Roadmap)
 
 ### ✅ Fase 0: On-Board (Completed)
-- [x] Setup Ambiente e Firmware Update
-- [x] Hello World (Blink LED)
-- [x] Clock & Frequenze
-- [x] PWM Breathing LED
-- [x] Interrupts (EXTI)
-- [x] UART Communication
-- [x] Internal Temp Sensor (ADC)
-- [x] RTC & Alarm
+- [x] **00. Setup Ambiente e Firmware Update**
+- [x] **01. Hello World (Blink LED)**
+- [x] **02. Clock & Frequenze**
+- [x] **03. PWM Breathing LED**
+- [x] **04. Interrupts (EXTI)**
+- [x] **05. UART Communication**
+- [x] **06. Internal Temp Sensor (ADC)**
+- [x] **07. RTC & Alarm**
 
 ### 🟢 Fase 1: Breadboard Fundamentals
 Questi esperimenti servono a prendere confidenza con i collegamenti fisici, la breadboard e l'uso del Multimetro.
