@@ -234,6 +234,78 @@ while (1)
 }
 ```
 
+### 7. Real Time Clock (RTC) & Alarm (LSE Crystal)
+* **Obiettivo:** Trasformare il microcontrollore in un orologio preciso usando il quarzo esterno e scatenare un evento (Sveglia) tramite interrupt.
+* **Periferica:** RTC (Real Time Clock).
+* **Clock Source:** **LSE** (Low Speed External) a 32.768 kHz (Cristallo fisico sulla scheda).
+* **Precisione:** Elevata (errore di pochi secondi al mese).
+
+**Configurazione Hardware (CubeMX):**
+1.  **RCC:** Low Speed Clock (LSE) -> **Crystal/Ceramic Resonator**.
+2.  **Clock Config:** RTC Source Mux -> **LSE**.
+3.  **RTC Parameter:** * `Asynchronous Prediv`: **127**
+    * `Synchronous Prediv`: **255**
+    * *(127+1) * (255+1) = 32768 Hz -> 1 Hz esatto.*
+4.  **NVIC:** Abilitare **RTC alarm interrupt through EXTI line 17**.
+
+**Codice Sorgente (`main.c`):**
+
+**A. Setup Iniziale (USER CODE BEGIN 2)**
+Impostiamo l'orario a 12:00:00 e la sveglia a 12:00:10.
+
+```c
+// 1. Imposta Orario Iniziale
+RTC_TimeTypeDef sTime = {0};
+sTime.Hours = 0x12; // 12 (Formato BCD)
+sTime.Minutes = 0x00;
+sTime.Seconds = 0x00;
+HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD);
+
+// 2. Imposta Allarme (+10 secondi)
+RTC_AlarmTypeDef sAlarm = {0};
+sAlarm.AlarmTime.Hours = 0x12;
+sAlarm.AlarmTime.Minutes = 0x00;
+sAlarm.AlarmTime.Seconds = 0x10; // Suona alle 12:00:10
+sAlarm.Alarm = RTC_ALARM_A;
+sAlarm.AlarmMask = RTC_ALARMMASK_DATEWEEKDAY; // Ignora la data, guarda solo l'ora
+HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BCD);
+
+char msg[] = "RTC Avviato (LSE). Allarme tra 10 secondi...\r\n";
+HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 100);
+```
+
+**B. Gestione Interrupt (USER CODE BEGIN 4)**
+La funzione chiamata quando scatta l'allarme.
+
+```c
+void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc)
+{
+    char msg[] = "\r\n[ALARM] DRIIIN! SVEGLIA !!!\r\n";
+    HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 100);
+    
+    // Accendi il LED fisso
+    HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+}
+```
+
+**C. Loop di lettura (while 1)**
+Visualizza l'orario corrente.
+*Nota: Bisogna sempre leggere PRIMA l'orario e POI la data per sbloccare i registri shadow.*
+
+```c
+RTC_TimeTypeDef gTime;
+RTC_DateTypeDef gDate;
+
+HAL_RTC_GetTime(&hrtc, &gTime, RTC_FORMAT_BIN);
+HAL_RTC_GetDate(&hrtc, &gDate, RTC_FORMAT_BIN);
+
+char msg[30];
+sprintf(msg, "Time: %02d:%02d:%02d\r", gTime.Hours, gTime.Minutes, gTime.Seconds);
+HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 100);
+
+HAL_Delay(1000);
+```
+
 ## ⚙️ Gestione Git (.gitignore)
 
 Per evitare di caricare file spazzatura (compilati, debug, impostazioni locali), creare un file chiamato `.gitignore` nella cartella principale (root) e incollarci dentro questo contenuto:
@@ -300,7 +372,7 @@ In attesa della breadboard, questi esperimenti sfruttano l'hardware già integra
 - [x] Interrupts (EXTI)
 - [x] UART Communication
 - [x] Internal Temp Sensor (ADC)
-- [ ] RTC & Alarm
+- [x] RTC & Alarm
 - [ ] Digital Input (Button Reading)
 - [ ] Lettura Analogica Esterna (Potenziometro)
 - [ ] Integrazione Relè e Transistor
