@@ -357,6 +357,82 @@ HAL_ADC_Stop(&hadc1);
 HAL_Delay(100);
 ```
 
+### 10. Pulsante Esterno & Debouncing Hardware
+* **Obiettivo:** Leggere un input digitale da un pulsante esterno eliminando i falsi contatti (rimbalzi meccanici) tramite un filtro hardware.
+* **Hardware:** Pulsante, Resistenza 10kΩ (Pull-Down), Condensatore 100nF.
+* **Pin:** `PA10` (Label: `MY_BTN`, Header Arduino: **D2**).
+* **Teoria:**
+    * **Pull-Down:** La resistenza tiene il pin a 0V (GND) quando il tasto non è premuto.
+    * **Filtro RC:** Il condensatore in parallelo alla resistenza assorbe le vibrazioni rapide delle lamelle del pulsante ("Bouncing"), fornendo al microcontrollore un segnale pulito (0 o 1 netto).
+
+**Collegamento (Logica Active High):**
+* **Lato 1 Pulsante:** 3.3V.
+* **Lato 2 Pulsante (Segnale):** Pin `PA10`.
+* **Nodo Segnale:** Collegare qui anche la Resistenza verso GND e il Condensatore verso GND.
+
+```c
+/* Nel while(1) */
+// Con Pull-Down esterno:
+// GPIO_PIN_SET (1)   = Tasto Premuto (3.3V)
+// GPIO_PIN_RESET (0) = Tasto Rilasciato (0V via Resistenza)
+
+if (HAL_GPIO_ReadPin(MY_BTN_GPIO_Port, MY_BTN_Pin) == GPIO_PIN_SET)
+{
+    // Accendi LED
+    HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+}
+else
+{
+    // Spegni LED
+    HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+}
+HAL_Delay(10);
+```
+
+#### 🔬 Deep Dive: Visualizzare il Rimbalzo (Bouncing)
+Per dimostrare la necessità del condensatore, si può utilizzare questo codice di test "instabile".
+Rimuovendo `HAL_Delay` e contando ogni fronte di salita (0 -> 1), questo programma mostra come una singola pressione meccanica generi decine di segnali spuri se il filtro hardware (condensatore) viene rimosso.
+
+**Istruzioni per il test:**
+1. Rimuovere il condensatore dal circuito.
+2. Caricare questo codice.
+3. Premere il tasto una volta.
+4. Osservare sul Serial Monitor come il contatore aumenti di 10-20 unità per un singolo click.
+5. Reinserire il condensatore: il contatore aumenterà di 1 unità esatta.
+
+```c
+/* USER CODE BEGIN PV */
+uint8_t stato_precedente = 0;
+uint32_t counter = 0;
+/* USER CODE END PV */
+
+/* USER CODE BEGIN WHILE */
+while (1)
+{
+    // 1. Lettura diretta (senza delay per massima sensibilità)
+    uint8_t stato_attuale = HAL_GPIO_ReadPin(MY_BTN_GPIO_Port, MY_BTN_Pin);
+
+    // 2. Rilevamento Fronte di Salita (Rising Edge: 0 -> 1)
+    if (stato_attuale == GPIO_PIN_SET && stato_precedente == GPIO_PIN_RESET)
+    {
+        counter++; // Conta il segnale (anche se è un rimbalzo)
+
+        // Stampa il conteggio
+        char msg[50];
+        sprintf(msg, "Segnali rilevati: %lu\r\n", counter);
+        HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 10);
+        
+        // Toggle LED per feedback visivo
+        HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+    }
+
+    // Aggiorna lo stato per il prossimo ciclo
+    stato_precedente = stato_attuale;
+    
+    // NESSUN DELAY: Il loop gira alla massima frequenza della CPU
+}
+```
+
 ## ⚙️ Gestione Git (.gitignore)
 
 Per evitare di caricare file spazzatura (compilati, debug, impostazioni locali), creare un file chiamato `.gitignore` nella cartella principale (root) e incollarci dentro questo contenuto:
@@ -430,7 +506,7 @@ In attesa della breadboard, questi esperimenti sfruttano l'hardware già integra
 Questi esperimenti servono a prendere confidenza con i collegamenti fisici, la breadboard e l'uso del Multimetro.
 - [x] **08. External Blink** (GPIO Output & Legge di Ohm)
 - [x] **09. Il Potenziometro** (ADC Input & Partitore di Tensione)
-- [ ] **10. Pulsante Esterno** (Input & Hardware Debounce con filtro RC)
+- [x] **10. Pulsante Esterno** (Input & Hardware Debounce con filtro RC)
 
 ### 🟡 Fase 2: Potenza & Switching
 Gestione di carichi che richiedono più corrente di quella che il microcontrollore può erogare.
