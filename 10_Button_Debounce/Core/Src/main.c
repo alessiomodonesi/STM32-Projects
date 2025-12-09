@@ -21,7 +21,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -43,7 +44,8 @@
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+uint8_t stato_precedente = 0;
+uint32_t contatore_pressioni = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -103,18 +105,48 @@ int main(void)
     // GPIO_PIN_SET (1) = Premuto (3.3V passano)
     // GPIO_PIN_RESET (0) = Rilasciato (La resistenza porta a GND)
 
-    if (HAL_GPIO_ReadPin(MY_BTN_GPIO_Port, MY_BTN_Pin) == GPIO_PIN_SET)
+    // if (HAL_GPIO_ReadPin(MY_BTN_GPIO_Port, MY_BTN_Pin) == GPIO_PIN_SET)
+    // {
+    //   // Accendi LED (feedback immediato)
+    //   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+    // }
+    // else
+    // {
+    //   // Spegni LED
+    //   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+    // }
+
+    // HAL_Delay(10); // Piccolo ritardo software extra per stabilità
+
+    // ------------------------------------------------------------------------
+
+    // 1. Leggi lo stato attuale (senza filtri)
+    uint8_t stato_attuale = HAL_GPIO_ReadPin(MY_BTN_GPIO_Port, MY_BTN_Pin);
+
+    // 2. Rileva il "Fronte di Salita" (Passaggio da 0 a 1)
+    if (stato_attuale == GPIO_PIN_SET && stato_precedente == GPIO_PIN_RESET)
     {
-      // Accendi LED (feedback immediato)
+      contatore_pressioni++; // Conta la pressione
+
+      // Invia il conteggio al PC
+      char msg[50];
+      sprintf(msg, "Click rilevati: %lu\r\n", contatore_pressioni);
+      HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), 10);
+
+      // Accendi il LED per vedere che ha rilevato qualcosa
       HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
     }
-    else
+
+    // Spegni il LED quando rilasci
+    if (stato_attuale == GPIO_PIN_RESET)
     {
-      // Spegni LED
       HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
     }
 
-    HAL_Delay(10); // Piccolo ritardo software extra per stabilità
+    // Aggiorna la memoria per il prossimo giro
+    stato_precedente = stato_attuale;
+
+    // NESSUN DELAY QUI! Dobbiamo essere velocissimi per vedere l'errore.
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
