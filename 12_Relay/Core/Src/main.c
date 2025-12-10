@@ -100,7 +100,6 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
     // Leggi il pulsante su PA10 (D2)
     // Se non hai definito MY_BTN, usa: HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10)
     uint8_t stato_att = HAL_GPIO_ReadPin(MY_BTN_GPIO_Port, MY_BTN_Pin);
@@ -110,25 +109,28 @@ int main(void)
     {
       sistema_attivo = !sistema_attivo; // Inverti stato (ON <-> OFF)
 
-      if (sistema_attivo)
+      if (sistema_attivo) // ACCENDI RELÈ (PA0) e LED (PA1)
       {
-        // ACCENDI RELÈ (PA0) e LED (PA1)
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);
+        // 1. Accendi SUBITO il LED (Feedback visivo istantaneo)
         HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);
+
+        // 2. Aspetta 0.5s
+        HAL_Delay(500);
+
+        // 3. Ora fai scattare il RELÈ (Feedback acustico)
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);
       }
-      else
+      else // SPEGNI TUTTO
       {
-        // SPEGNI TUTTO
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
         HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
+        HAL_Delay(500);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
       }
       HAL_Delay(50); // Piccolo ritardo anti-rimbalzo
     }
     stato_prec = stato_att;
     HAL_Delay(10);
-    /* USER CODE BEGIN 3 */
   }
-  /* USER CODE END 3 */
 }
 
 /**
