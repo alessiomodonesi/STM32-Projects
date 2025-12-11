@@ -118,8 +118,7 @@ int main(void)
       HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), 10);
     }
 
-    // NESSUN DELAY QUI!
-    // Dobbiamo essere velocissimi per catturare la voce.
+    HAL_Delay(50); // pausa tra una lettura e l'altra
   }
   /* USER CODE END 3 */
 }
