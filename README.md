@@ -506,6 +506,82 @@ if (stato_pulsante_att == GPIO_PIN_SET && stato_pulsante_prec == GPIO_PIN_RESET)
 }
 ```
 
+### 13. Shift Register (74HC595) - Effetto Supercar
+* **Obiettivo:** Espandere le uscite digitali (da 3 a 8) per creare effetti luminosi complessi utilizzando un registro a scorrimento (Shift Register).
+* **Hardware:** Chip 74HC595, 8x LED, 8x Resistenze 220Ω.
+* **Pin Nucleo:**
+    * `PA9` (D8) -> **DS** (Data - Pin 14 Chip)
+    * `PC7` (D9) -> **ST_CP** (Latch - Pin 12 Chip)
+    * `PB6` (D10) -> **SH_CP** (Clock - Pin 11 Chip)
+* **Pin Chip Critici:**
+    * **VCC (16) & MR (10):** Collegati a 3.3V.
+    * **GND (8) & OE (13):** Collegati a GND.
+    * **Q0 (Pin 15):** Prima uscita LED (Attenzione: è separata dalle altre Q1-Q7).
+
+**Teoria:** Il chip converte una comunicazione seriale (bit inviati uno alla volta) in un'uscita parallela. Carichiamo un byte intero (8 bit) e poi diamo il comando "Latch" per accendere tutti i LED insieme.
+
+```c
+/* Funzione ShiftOut (Bit-Banging manuale) */
+void ShiftOut(uint8_t data) {
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); // Latch GIÙ (Inizio trasmissione)
+    
+    for (int i = 7; i >= 0; i--) {
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET); // Clock GIÙ
+        
+        // Scriviamo il bit (MSB first)
+        if ((data >> i) & 1) 
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);
+        else                 
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_RESET);
+            
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);   // Clock SU (Salva il bit)
+    }
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);   // Latch SU (Mostra output)
+}
+
+/* Esempio utilizzo: Effetto Supercar */
+for (int i = 0; i < 8; i++) {
+    ShiftOut(1 << i); // Sposta il bit acceso
+    HAL_Delay(100);
+}
+```
+
+### 14. Orecchio Elettronico (Microfono & Op-Amp LM358)
+* **Obiettivo:** Amplificare il segnale analogico debolissimo (pochi mV) di un microfono a elettrete per visualizzare la forma d'onda della voce sul PC.
+* **Hardware:**
+    * Microfono a Elettrete.
+    * Amplificatore Operazionale **LM358** (Op-Amp).
+    * Componenti passivi: 2x Condensatori 100nF, Resistenze (1kΩ, 2x 10kΩ, 100kΩ).
+* **Pin:** `PA0` configurato come **ADC1_IN0** (Continuous Conversion Mode).
+* **Teoria Circuitale:**
+    * **Amplificatore Non-Invertente:** Il segnale entra nel pin positivo (+) dell'Op-Amp.
+    * **DC Bias (Centraggio):** Un partitore di tensione (due resistenze da 10kΩ) porta il livello di riposo a 1.65V (metà di 3.3V) per permettere l'oscillazione completa dell'onda.
+    * **Guadagno (Gain):** Circa **100x**. Calcolato dalla formula $G = 1 + (R_{feedback} / R_{input})$, ovvero $1 + (100k / 1k) \approx 101$.
+
+**Collegamento:**
+* **LM358:** Pin 8 a 3.3V, Pin 4 a GND.
+* **Microfono:** Pin Negativo a GND, Pin Positivo a 3.3V (tramite resistenza pull-up) e accoppiato in AC al Pin 3 dell'Op-Amp.
+* **Output:** Pin 1 dell'LM358 collegato a `PA0`.
+
+```c
+/* Nel main.c, prima del while(1) */
+HAL_ADC_Start(&hadc1);
+
+/* Nel while(1) */
+if (HAL_ADC_PollForConversion(&hadc1, 1) == HAL_OK)
+{
+    // 1. Leggi il valore campionato
+    uint32_t rawValue = HAL_ADC_GetValue(&hadc1);
+
+    // 2. Invia via UART formattato per Serial Plotter (Valore + a capo)
+    char msg[20];
+    sprintf(msg, "%lu\r\n", rawValue);
+    HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 10);
+
+    // Nota: Nessun HAL_Delay per massimizzare la frequenza di campionamento
+}
+```
+
 ## ⚙️ Gestione Git (.gitignore)
 
 Per evitare di caricare file spazzatura (compilati, debug, impostazioni locali), creare un file chiamato `.gitignore` nella cartella principale (root) e incollarci dentro questo contenuto:
@@ -587,8 +663,8 @@ Gestione di carichi che richiedono più corrente di quella che il microcontrollo
 - [x] **12. Relè & Diodo di Ricircolo** (Isolamento galvanico e protezione da sovratensioni)
 
 ### 🟠 Fase 3: Logica Digitale
-- [ ] **13. Shift Register** (74HC595 - Espansione uscite / Effetto Supercar)
+- [x] **13. Shift Register** (74HC595 - Espansione uscite / Effetto Supercar)
 
 ### 🔴 Fase 4: Analogica Avanzata
-- [ ] **14. Microfono & Op-Amp** (Amplificazione operazionale di segnali deboli)
+- [x] **14. Microfono & Op-Amp** (Amplificazione operazionale di segnali deboli)
 - [ ] **15. Costante di Tempo RC** (Misura della capacità di un condensatore usando la fisica)
