@@ -95,28 +95,31 @@ int main(void)
   MX_ADC1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  // AVVIA L'ADC (Fondamentale!)
+  HAL_ADC_Start(&hadc1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  HAL_ADC_Start(&hadc1); // Avvia l'ADC una volta sola (perché è in continuous)
   while (1)
   {
-    // Leggi il valore (non serve aspettare, è continuo)
-    if (HAL_ADC_PollForConversion(&hadc1, 1) == HAL_OK)
+    // Chiedi all'ADC se ha finito di convertire un campione
+    if (HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK)
     {
-      uint32_t rawValue = HAL_ADC_GetValue(&hadc1);
+      // 1. Leggi il valore (0 - 4095)
+      uint32_t val = HAL_ADC_GetValue(&hadc1);
 
-      // Manda il dato grezzo per il plotter
-      // Formato: "valore\r\n"
+      // 2. Formatta SOLO il numero con "a capo" (\r\n)
+      // Il Plotter vuole solo numeri puri, niente testo tipo "Valore:"
       char msg[20];
-      sprintf(msg, "%lu\r\n", rawValue);
+      sprintf(msg, "%lu\r\n", val);
+
+      // 3. Spedisci
       HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), 10);
     }
 
-    // Niente Delay! Dobbiamo essere veloci per catturare l'audio.
-    // Un delay anche di 1ms renderebbe il grafico "a scatti".
+    // NESSUN DELAY QUI!
+    // Dobbiamo essere velocissimi per catturare la voce.
   }
   /* USER CODE END 3 */
 }
@@ -198,7 +201,7 @@ static void MX_ADC1_Init(void)
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.NbrOfConversion = 1;
   hadc1.Init.DMAContinuousRequests = DISABLE;
-  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
     Error_Handler();
