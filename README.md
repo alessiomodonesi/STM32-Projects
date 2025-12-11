@@ -547,38 +547,49 @@ for (int i = 0; i < 8; i++) {
 ```
 
 ### 14. Orecchio Elettronico (Microfono & Op-Amp LM358)
-* **Obiettivo:** Amplificare il segnale analogico debolissimo (pochi mV) di un microfono a elettrete per visualizzare la forma d'onda della voce sul PC.
+* **Obiettivo:** Amplificare il segnale analogico di un microfono (pochi mV) per visualizzare la forma d'onda della voce sul PC tramite Serial Plotter.
 * **Hardware:**
     * Microfono a Elettrete.
-    * Amplificatore Operazionale **LM358** (Op-Amp).
-    * Componenti passivi: 2x Condensatori 100nF, Resistenze (1kΩ, 2x 10kΩ, 100kΩ).
-* **Pin:** `PA0` configurato come **ADC1_IN0** (Continuous Conversion Mode).
-* **Teoria Circuitale:**
-    * **Amplificatore Non-Invertente:** Il segnale entra nel pin positivo (+) dell'Op-Amp.
-    * **DC Bias (Centraggio):** Un partitore di tensione (due resistenze da 10kΩ) porta il livello di riposo a 1.65V (metà di 3.3V) per permettere l'oscillazione completa dell'onda.
-    * **Guadagno (Gain):** Circa **100x**. Calcolato dalla formula $G = 1 + (R_{feedback} / R_{input})$, ovvero $1 + (100k / 1k) \approx 101$.
+    * Op-Amp **LM358** (Configurazione Non-Invertente).
+    * Resistenza Feedback: **1 MΩ** (Modificata per guadagno elevato).
+    * Resistenza Input (GND): **1 kΩ**.
+    * Partitore Bias: 2x **10 kΩ**.
+    * Condensatori: 2x **100 nF** (Accoppiamento AC).
+* **Pin Nucleo:** `PA0` configurato come **ADC1_IN0** (Continuous Mode).
 
-**Collegamento:**
-* **LM358:** Pin 8 a 3.3V, Pin 4 a GND.
-* **Microfono:** Pin Negativo a GND, Pin Positivo a 3.3V (tramite resistenza pull-up) e accoppiato in AC al Pin 3 dell'Op-Amp.
-* **Output:** Pin 1 dell'LM358 collegato a `PA0`.
+**Teoria & Calcoli:**
+* **Bias DC (Centraggio):** Il segnale audio oscilla tra positivo e negativo. Poiché l'STM32 legge solo 0-3.3V, usiamo un partitore di tensione per centrare il silenzio a **1.65V** (metà scala, circa valore ADC 2048).
+* **Guadagno (Gain):** Abbiamo configurato l'amplificatore per moltiplicare il segnale x1000.
+  $$Gain = 1 + \frac{R_{feedback}}{R_{input}} = 1 + \frac{1.000.000}{1.000} \approx 1001 \text{ volte}$$
+* **Filtro Passa-Alto:** Il condensatore da 100nF in ingresso forma un filtro con la resistenza da 1kΩ ($f_c \approx 16Hz$) per rimuovere la componente DC ma lasciar passare tutta la voce.
+
+**Risultati Sperimentali:**
+* **Silenzio:** Valore ADC stabile attorno a **2000-2050** (1.65V).
+* **Voce/Fischio:** Oscillazione ampia tra **1200 e 3000** (grazie al Gain 1000x).
 
 ```c
-/* Nel main.c, prima del while(1) */
-HAL_ADC_Start(&hadc1);
+/* CONFIGURAZIONE: ADC1 Continuous Mode, USART2 115200 baud */
 
-/* Nel while(1) */
-if (HAL_ADC_PollForConversion(&hadc1, 1) == HAL_OK)
+/* Nel main.c - USER CODE BEGIN 2 */
+HAL_ADC_Start(&hadc1); // Avvia l'ADC
+
+/* Nel main.c - USER CODE BEGIN WHILE */
+while (1)
 {
-    // 1. Leggi il valore campionato
-    uint32_t rawValue = HAL_ADC_GetValue(&hadc1);
-
-    // 2. Invia via UART formattato per Serial Plotter (Valore + a capo)
-    char msg[20];
-    sprintf(msg, "%lu\r\n", rawValue);
-    HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 10);
-
-    // Nota: Nessun HAL_Delay per massimizzare la frequenza di campionamento
+    // Attendi la conversione
+    if (HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK)
+    {
+        // 1. Leggi il valore (0-4095)
+        uint32_t val = HAL_ADC_GetValue(&hadc1);
+        
+        // 2. Formatta per Serial Plotter (Numero + a capo)
+        char msg[20];
+        sprintf(msg, "%lu\r\n", val); 
+        HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 10);
+    }
+    
+    // Piccolo ritardo per rendere il grafico leggibile
+    HAL_Delay(1); 
 }
 ```
 
