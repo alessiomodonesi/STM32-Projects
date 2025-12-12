@@ -593,6 +593,54 @@ while (1)
 }
 ```
 
+### 15. Costante di Tempo RC (Capacimetro Scientifico)
+* **Obiettivo:** Visualizzare la curva di carica di un condensatore e misurarne la capacità sfruttando la legge fisica della costante di tempo ($\tau = R \times C$).
+* **Hardware:**
+    * Condensatore Elettrolitico (es. 100µF o 47µF). *Attenzione alla polarità!*
+    * Resistenza Nota (es. 10kΩ).
+* **Pin Nucleo:**
+    * `PA0` (ADC1_IN0) -> **Sonda** (Collegato al nodo positivo del condensatore).
+    * `PA1` (GPIO_Output) -> **Alimentazione** (Collegato alla resistenza).
+* **Teoria:** Un condensatore si carica attraverso una resistenza seguendo una curva esponenziale. Il tempo necessario per raggiungere il **63.2%** della carica massima è pari a $\tau = R \cdot C$.
+    * *Esempio:* Con $R=10k\Omega$ e $C=100\mu F$, $\tau = 1.0$ secondi.
+
+**Collegamento:**
+* **GND** -> Condensatore (-)
+* **PA1** -> Resistenza -> Condensatore (+) -> **PA0**
+
+```c
+/* Nel main.c - Ciclo di Carica e Scarica per Plotter */
+while (1)
+{
+    // --- FASE 1: SCARICA (Discharge) ---
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET); // Metti a terra (0V)
+
+    // Aspettiamo che si scarichi (visualizzando lo zero)
+    for(int i=0; i<200; i++) {
+        uint32_t val = HAL_ADC_GetValue(&hadc1);
+        char msg[50];
+        // Inviamo anche 0 e 4095 per bloccare la scala del Plotter
+        sprintf(msg, "0 4095 %lu\r\n", val);
+        HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 10);
+        HAL_Delay(50); // Campionamento lento per vedere tutto il processo
+    }
+
+    // --- FASE 2: CARICA (Charge) ---
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET); // Dai corrente (3.3V)
+
+    // Visualizziamo la curva di salita ("Pinna di Squalo")
+    for(int i=0; i<200; i++) {
+        if (HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK) {
+             uint32_t val = HAL_ADC_GetValue(&hadc1);
+             char msg[50];
+             sprintf(msg, "0 4095 %lu\r\n", val);
+             HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 10);
+        }
+        HAL_Delay(50);
+    }
+}
+```
+
 ## ⚙️ Gestione Git (.gitignore)
 
 Per evitare di caricare file spazzatura (compilati, debug, impostazioni locali), creare un file chiamato `.gitignore` nella cartella principale (root) e incollarci dentro questo contenuto:
@@ -678,4 +726,4 @@ Gestione di carichi che richiedono più corrente di quella che il microcontrollo
 
 ### 🔴 Fase 4: Analogica Avanzata
 - [x] **14. Microfono & Op-Amp** (Amplificazione operazionale di segnali deboli)
-- [ ] **15. Costante di Tempo RC** (Misura della capacità di un condensatore usando la fisica)
+- [x] **15. Costante di Tempo RC** (Misura della capacità di un condensatore usando la fisica)
