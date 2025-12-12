@@ -700,8 +700,8 @@ In attesa della breadboard, questi esperimenti sfruttano l'hardware già integra
 
 ## 🚀 Prossimi Passaggi (Roadmap)
 
-### ✅ Fase 0: On-Board (Completed)
-- [x] **00. Setup Ambiente e Firmware Update**
+### ⚪️ Fase 0: On-Board
+- [x] **0. Setup Ambiente e Firmware Update**
 - [x] **01. Hello World (Blink LED)**
 - [x] **02. Clock & Frequenze**
 - [x] **03. PWM Breathing LED**
