@@ -1,4 +1,4 @@
-# 📘 STM32 Projects Journey - Nucleo F446RE
+# 📘 STM32 Lab Journey - Nucleo F446RE
 
 Questa repository documenta il percorso di apprendimento e i progetti sviluppati sulla scheda di sviluppo **STM32 Nucleo-F446RE**.
 Contiene il codice sorgente, le configurazioni hardware e le note operative per replicare gli esperimenti.
@@ -39,7 +39,7 @@ Se su macOS non compare la voce *File -> New -> STM32 Project*:
 Questa è una **Monorepo**. Ogni esercizio o progetto ha la sua cartella dedicata per mantenere l'indipendenza delle librerie HAL.
 
 ```text
-STM32_Projects/
+STM32_Lab/
 ├── .gitignore           # File configurazione Git (ignora file di build/debug)
 ├── README.md            # Questo manuale
 │
@@ -47,7 +47,7 @@ STM32_Projects/
 ├── 02_Button_Input/     # Progetto 2: Lettura Tasto e controllo LED
 └── ...
 ```
-> **Nota:** Quando si crea un nuovo progetto con STM32CubeMX/IDE, assicurarsi di selezionare la cartella `STM32_Projects` come root, in modo che venga creata la sottocartella specifica (es. `03_Relay/`) al suo interno.
+> **Nota:** Quando si crea un nuovo progetto con STM32CubeMX/IDE, assicurarsi di selezionare la cartella `STM32_Lab` come root, in modo che venga creata la sottocartella specifica (es. `03_Relay/`) al suo interno.
 
 ## 📝 Snippet di Codice Utili
 
